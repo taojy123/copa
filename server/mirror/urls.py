@@ -8,8 +8,7 @@ app_name = 'mirror'
 
 
 urlpatterns = [
+    path('status/', views.status),
     path('push/', views.push),
-    path('fetch/', views.fetch),
-    path('savepoints/', views.savepoints),
-    path('loadpoint/', views.loadpoint),
+    path('pull/', views.pull),
 ]

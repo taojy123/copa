@@ -10,6 +10,33 @@ from mirror.models import Package
 PACKAGE_LIMIT_MB = 100
 
 
+def status(request):
+    name = request.POST.get('name')
+    savepoint = request.POST.get('savepoint', False)
+    conflict = request.POST.get('conflict', False)
+    latest = request.POST.get('latest', False)
+    packages = Package.objects.filter(name=name).order_by('-id')
+    if savepoint:
+        packages = packages.filter(savepoint=True)
+    if conflict:
+        packages = packages.filter(conflict=True)
+    if latest:
+        packages = packages.limit(1)
+    rs = []
+    for package in packages:
+        r = {
+            'id': package.id,
+            'name': package.name,
+            'content_length': package.content_length,
+            'hash': package.hash,
+            'savepoint': package.savepoint,
+            'conflict': package.conflict,
+            'created_at': package.created_at,
+        }
+        rs.append(r)
+    return JsonResponse({'packages': rs})
+
+
 def push(request):
     name = request.POST.get('name')
     hash = request.POST.get('hash')
@@ -19,64 +46,43 @@ def push(request):
     if not name:
         return HttpResponseBadRequest('miss name')
 
-    if not package:
-        return HttpResponseBadRequest('miss package')
 
     packages = Package.objects.filter(name=name).order_by('-id')
 
-    package = packages.filter(hash=hash).first()
+    p = packages.filter(hash=hash).first()
 
-    if package and not savepoint:
+    if p and not savepoint:
         return HttpResponse('package exists')
 
-    if not package:
+    if not p:
+        if not package:
+            return HttpResponseBadRequest('miss package')
         content = package.read()
         if len(content) > 1024 * 1024 * PACKAGE_LIMIT_MB:
             return HttpResponseBadRequest(f'the package size must less than {PACKAGE_LIMIT_MB}MB')
         if hashlib.md5(content).hexdigest() != hash:
             return HttpResponseBadRequest('hash not match')
-        package = Package.objects.create(name=name, hash=hash, content=content)
+        p = Package.objects.create(name=name, hash=hash, content=content)
 
     if savepoint:
-        package.savepoint = True
-        package.save(update_fields=['savepoint'])
+        p.savepoint = True
+        p.save(update_fields=['savepoint'])
 
     return HttpResponse('package saved')
 
 
-def fetch(request):
-    name = request.POST.get('name')
-    package = Package.objects.filter(name=name).order_by('-id').first()
-    if not package:
-        return HttpResponseNotFound('package not exists')
-    content = BytesIO(package.content)
-    return StreamingHttpResponse(content)
-
-
-def savepoints(request):
-    name = request.POST.get('name')
-    packages = Package.objects.filter(name=name, savepoint=True).order_by('-id')
-    rs = []
-    for package in packages:
-        r = {
-            'id': package.id,
-            'name': package.name,
-            'content_length': package.content_length,
-            'hash': package.hash,
-            'created_at': package.created_at,
-        }
-        rs.append(r)
-    return JsonResponse({'savepoints': rs})
-
-
-def loadpoint(request):
+def pull(request):
     name = request.POST.get('name')
     hash = request.POST.get('hash')
-    package = Package.objects.filter(name=name, hash=hash).first()
+    if hash:
+        package = Package.objects.filter(name=name, hash=hash).first()
+    else:
+        package = Package.objects.filter(name=name).order_by('-id').first()
     if not package:
         return HttpResponseNotFound('package not found')
     content = BytesIO(package.content)
     return StreamingHttpResponse(content)
+
 
 
 

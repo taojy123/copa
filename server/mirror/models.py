@@ -14,3 +14,13 @@ class Package(models.Model):
     def content_length(self):
         return len(self.content)
 
+
+class Clipboard(models.Model):
+    name = models.CharField(max_length=100, db_index=True)
+    content = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    @property
+    def content_length(self):
+        return len(self.content)
+

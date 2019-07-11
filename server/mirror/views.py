@@ -21,7 +21,7 @@ def status(request):
     if conflict:
         packages = packages.filter(conflict=True)
     if latest:
-        packages = packages.limit(1)
+        packages = packages[:1]
     rs = []
     for package in packages:
         r = {

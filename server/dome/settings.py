@@ -27,7 +27,8 @@ DEBUG = os.getenv('DEBUG', True)
 if DEBUG in {'false', 'False', '', '0', 0, None, 'off'}:
     DEBUG = False
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition

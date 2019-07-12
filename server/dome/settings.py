@@ -86,7 +86,6 @@ DATABASES = {
 
 if os.getenv('MYSQL_HOST'):
     import pymysql
-    pymysql.version_info = (1, 4, 2, 'final', 0)
     pymysql.install_as_MySQLdb()
     DATABASES = {
         'default': {

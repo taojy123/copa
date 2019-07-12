@@ -11,4 +11,5 @@ urlpatterns = [
     path('status/', views.status),
     path('push/', views.push),
     path('pull/', views.pull),
+    path('clear/', views.clear),
 ]

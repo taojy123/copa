@@ -2,156 +2,232 @@ import hashlib
 import json
 import os
 import io
+import shutil
 import time
 import zipfile
 
 import requests
 
 
-HOST = 'http://127.0.0.1:8000'
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-NAME = os.path.basename(BASE_DIR)
-IGNORE = ['dome', 'requirements.txt']
+def package_files(target=''):
+    target = target or PACKAGE_DIR
 
-open('domeconf.json', 'a')
-s = open('domeconf.json').read().strip()
-if s:
-    conf = json.loads(s)
-    for key, value in conf.items():
-        if not value:
-            continue
-        locals()[key.upper()] = value
-
-
-print('============== dome v1 ===============')
-print('HOST:', HOST)
-print('BASE_DIR:', BASE_DIR)
-print('NAME:', NAME)
-print('IGNORE:', IGNORE)
-print('======================================')
-
-
-def file_finder(silent=True):
-    for path, dirnames, filenames in os.walk(BASE_DIR):
-        rpath = path.replace(BASE_DIR, '').strip().strip('/').strip('\\')
+    abs_file_list = []
+    rel_file_list = []
+    for path, dirnames, filenames in os.walk(target):
+        rpath = path.replace(target, '').strip().strip('/').strip('\\')
         for filename in filenames:
-            skip = False
-            for item in IGNORE:
-                if item in filename:
-                    skip = True
-                    break
-            if skip:
-                continue
             abs_file = os.path.join(path, filename)
             rel_file = os.path.join(rpath, filename)
-            if not silent:
-                print(rel_file)
-            yield abs_file, rel_file
+            rel_file = rel_file.replace('\\', '/')
+            abs_file_list.append(abs_file)
+            rel_file_list.append(rel_file)
+    abs_file_list.sort()
+    rel_file_list.sort()
+
+    assert len(abs_file_list) == len(rel_file_list)
+
+    return abs_file_list, rel_file_list
 
 
-def current_package(silent=True):
-    package = io.BytesIO()
-    zip = zipfile.ZipFile(package, 'w', zipfile.ZIP_DEFLATED)
-    for abs_file, rel_file in file_finder(silent):
-        zip.write(abs_file, rel_file)
-    zip.close()
-    hash = get_package_hash(package)
-    return package, hash
+def package_hash(target=''):
+    target = target or PACKAGE_DIR
 
+    abs_file_list, rel_file_list = package_files(target)
 
-def get_package_hash(package):
-    package.seek(0)
-    content = package.read()
-    hash = hashlib.md5(content).hexdigest()
-    package.seek(0)
+    if not rel_file_list:
+        return ''
+
+    filenames = '|'.join(rel_file_list)
+    hash = hashlib.md5(filenames.encode()).hexdigest()
+    for filename in abs_file_list:
+        content = open(filename, 'rb').read()
+        hash += hashlib.md5(content).hexdigest()
+    hash = hashlib.md5(hash.encode()).hexdigest()
+
     return hash
 
 
 def get_last_hash():
     lasthash = open('domehash.txt').read().strip()
-    print('get hash:', lasthash)
+    print('local last hash:', lasthash)
     return lasthash
 
 
-def set_last_hash():
-    package, lasthash = current_package()
-    open('domehash.txt', 'w').write(lasthash)
-    print('set hash:', lasthash)
-    return lasthash
+def set_last_hash(hash=''):
+    hash = hash or package_hash()
+    open('domehash.txt', 'w').write(hash)
+    print('set last hash:', hash)
+    return hash
 
 
-def status(savepoint='', conflict='', latest=''):
-    print('status')
+def status(savepoint=False, conflict=False, latest=False):
     url = HOST + '/mirror/status/'
     data = {
         'name': NAME,
-        'savepoint': savepoint,
-        'conflict': conflict,
-        'latest': latest,
+        'savepoint': savepoint or '',
+        'conflict': conflict or '',
+        'latest': latest or '',
     }
     r = requests.post(url, data)
     # print(r.text)
     r = r.json()
     packages = r['packages']
-    print(json.dumps(packages, indent=2, ensure_ascii=False))
+    # print(json.dumps(packages, indent=2, ensure_ascii=False))
     if latest:
         return packages[0] if packages else None
     return packages
 
 
 def push(savepoint=False):
-    print('push')
-    package, hash = current_package(False)
+    print('=== Push ===')
+
+    package = io.BytesIO()
+    zipf = zipfile.ZipFile(package, 'w', zipfile.ZIP_DEFLATED)
+    abs_file_list, rel_file_list = package_files()
+    for abs_file, rel_file in zip(abs_file_list, rel_file_list):
+        print('pack:', abs_file, '->', rel_file)
+        zipf.write(abs_file, rel_file)
+    zipf.close()
+    package.seek(0)
+    hash = package_hash()
+
+    print('push current hash:', hash)
+
     url = HOST + '/mirror/push/'
     data = {
         'name': NAME,
         'hash': hash,
-        'savepoint': savepoint,
+        'savepoint': savepoint or '',
     }
     files = {'package': package}
     r = requests.post(url, data, files=files)
-    print(r.status_code, r.text)
-    if 'size must less than' in r.text:
-        raise AssertionError(r.text)
-    return set_last_hash()
+    if r.status_code is not 200:
+        print('ERROR:', r.text)
+        return
+
+    print('push success')
+    return set_last_hash(hash)
 
 
-def pull(hash=''):
-    print('pull')
+def pull(hash='', target=''):
+    print('=== PULL ===')
+
     url = HOST + '/mirror/pull/'
     data = {
         'name': NAME,
         'hash': hash
     }
     r = requests.post(url, data)
+    if r.status_code is not 200:
+        print('ERROR:', r.text)
+        return
+
     package = io.BytesIO(r.content)
 
-    print('---------- removing ----------')
-    for abs_file, rel_file in file_finder(False):
-        os.remove(abs_file)
-    print('------------------------------')
+    if target:
+        if os.path.exists(target):
+            print('Can not pull to a exists dir!')
+            return
+    else:
+        target = PACKAGE_DIR
 
-    zip = zipfile.ZipFile(package, 'r')
-    for file in zip.namelist():
-        zip.extract(file, BASE_DIR)
-    zip.close()
-    return set_last_hash()
+    print(f'load {hash or "latest"} to {target}')
+    zipf = zipfile.ZipFile(package, 'r')
+    file_list = zipf.namelist()
+    for file in file_list:
+        print('extract:', file)
+        zipf.extract(file, target)
+    zipf.close()
+
+    abs_file_list, rel_file_list = package_files()
+    for abs_file, rel_file in zip(abs_file_list, rel_file_list):
+        if rel_file not in file_list:
+            print('remove:', rel_file, '<-->', abs_file)
+            try:
+                os.remove(abs_file)
+            except Exception as e:
+                print('remove file failed:', e)
+
+    return set_last_hash(hash)
 
 
-while True:
+def get_config():
+    conf = open('domeconf.json').read()
+    conf = json.loads(conf)
+    return conf
 
-    time.sleep(5)
-    lasthash = get_last_hash()
-    package, currhash = current_package()
 
-    if currhash != lasthash:
-        lasthash = push()
+def set_config(conf):
+    conf = json.dumps(conf, ensure_ascii=False, indent=2)
+    open('domeconf.json', 'w').write(conf)
 
-    r = status(latest='1')
-    if r and r['hash'] != lasthash:
-        lasthash = pull()
 
+def entry_project_name():
+    while True:
+        name = input('Project Name: ')
+        if '/' in name or '\\' in name:
+            continue
+        if not name:
+            continue
+        return name
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+conf = get_config()
+HOST = conf.get('host') or 'http://127.0.0.1:8000'
+NAME = conf.get('name') or input('Project Name: ')
+PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
+
+
+print('============== dome v1 ===============')
+print('HOST:', HOST)
+print('NAME:', NAME)
+print('BASE_DIR:', BASE_DIR)
+print('PACKAGE_DIR:', PACKAGE_DIR)
+print('======================================')
+
+conf['host'] = HOST
+conf['name'] = NAME
+set_config(conf)
+
+
+if not os.path.exists(PACKAGE_DIR):
+    os.mkdir(PACKAGE_DIR)
+    print('init pull')
+    pull()
     print('======================================')
+
+
+
+if conf.get('manual', False):
+    print('Manual Mode')
+    status()
+    # pull('2adb233171254de1d624065c43c212ac', 'ttt2')
+    pass
+
+else:
+    print('Auto Run Mode')
+    while True:
+
+        time.sleep(5)
+
+        lasthash = get_last_hash()
+        currhash = package_hash()
+        print('local current hash:', currhash)
+
+        if currhash and currhash != lasthash:
+            lasthash = push()
+
+        r = status(latest=True)
+        remote_lasthash = r and r['hash']
+        print('remote last hash:', remote_lasthash)
+        if remote_lasthash != lasthash:
+            lasthash = pull()
+            if remote_lasthash != lasthash:
+                print('WARNING: pulling hash not matched:', lasthash)
+
+        print('======================================')
 
 
 

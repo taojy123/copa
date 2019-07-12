@@ -4,6 +4,7 @@ import os
 import io
 import shutil
 import time
+import traceback
 import zipfile
 
 import requests
@@ -49,6 +50,7 @@ def package_hash(target=''):
 
 
 def get_last_hash():
+    open('domehash.txt', 'a')
     lasthash = open('domehash.txt').read().strip()
     print('local last hash:', lasthash)
     return lasthash
@@ -153,8 +155,11 @@ def pull(hash='', target=''):
 
 
 def get_config():
-    conf = open('domeconf.json').read()
-    conf = json.loads(conf)
+    try:
+        conf = open('domeconf.json').read().lower()
+        conf = json.loads(conf)
+    except:
+        conf = {}
     return conf
 
 
@@ -173,67 +178,68 @@ def entry_project_name():
         return name
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-conf = get_config()
-HOST = conf.get('host') or 'http://127.0.0.1:8000'
-NAME = conf.get('name') or input('Project Name: ')
-PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
+try:
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    conf = get_config()
+    HOST = conf.get('host') or 'http://127.0.0.1:8000'
+    NAME = conf.get('name') or input('Project Name: ')
+    PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
 
 
-print('============== dome v1 ===============')
-print('HOST:', HOST)
-print('NAME:', NAME)
-print('BASE_DIR:', BASE_DIR)
-print('PACKAGE_DIR:', PACKAGE_DIR)
-print('======================================')
-
-conf['host'] = HOST
-conf['name'] = NAME
-set_config(conf)
-
-
-if not os.path.exists(PACKAGE_DIR):
-    os.mkdir(PACKAGE_DIR)
-    print('init pull')
-    pull()
+    print('============== dome v1 ===============')
+    print('HOST:', HOST)
+    print('NAME:', NAME)
+    print('BASE_DIR:', BASE_DIR)
+    print('PACKAGE_DIR:', PACKAGE_DIR)
     print('======================================')
 
+    conf['host'] = HOST
+    conf['name'] = NAME
+    set_config(conf)
 
 
-if conf.get('manual', False):
-    print('Manual Mode')
-    status()
-    # pull('2adb233171254de1d624065c43c212ac', 'ttt2')
-    pass
-
-else:
-    print('Auto Run Mode')
-    while True:
-
-        time.sleep(5)
-
-        lasthash = get_last_hash()
-        currhash = package_hash()
-        print('local current hash:', currhash)
-
-        if currhash and currhash != lasthash:
-            lasthash = push()
-
-        r = status(latest=True)
-        remote_lasthash = r and r['hash']
-        print('remote last hash:', remote_lasthash)
-        if remote_lasthash != lasthash:
-            lasthash = pull()
-            if remote_lasthash != lasthash:
-                print('WARNING: pulling hash not matched:', lasthash)
-
+    if not os.path.exists(PACKAGE_DIR):
+        os.mkdir(PACKAGE_DIR)
+        print('init pull')
+        pull()
         print('======================================')
 
 
 
+    if conf.get('manual', False):
+        print('Manual Mode')
+        status()
+        # pull('2adb233171254de1d624065c43c212ac', 'ttt2')
+        pass
 
+    else:
+        print('Auto Run Mode')
+        while True:
 
+            time.sleep(5)
 
+            lasthash = get_last_hash()
+            currhash = package_hash()
+            print('local current hash:', currhash)
+
+            if currhash and currhash != lasthash:
+                lasthash = push()
+
+            r = status(latest=True)
+            remote_lasthash = r and r['hash']
+            print('remote last hash:', remote_lasthash)
+            if remote_lasthash != lasthash:
+                lasthash = pull()
+                if remote_lasthash != lasthash:
+                    print('WARNING: pulling hash not matched:', lasthash)
+
+            print('======================================')
+
+except:
+    print('================== error ==================')
+    traceback.print_exc()
+    input()
 
 
 

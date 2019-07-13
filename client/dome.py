@@ -3,6 +3,7 @@ import json
 import os
 import io
 import shutil
+import sys
 import time
 import traceback
 import zipfile
@@ -84,6 +85,9 @@ def status(savepoint=False, conflict=False, latest=False, limit=5):
 
 def push(savepoint=False):
     print('=== Push ===')
+
+    if savepoint:
+        print('as savepoint')
 
     package = io.BytesIO()
     zipf = zipfile.ZipFile(package, 'w', zipfile.ZIP_DEFLATED)
@@ -183,6 +187,7 @@ def dome_command():
     print('2. show remote commits')
     print('3. pull remote commit to local')
     print('4. push local to remote commit')
+    print('5. quit')
 
     choice = input('chose a number: ').strip() or '1'
 
@@ -198,18 +203,31 @@ def dome_command():
         print('2. only conflict commits')
         print('3. all kind of commits [default]')
 
-        choice = input('chose a number: ').strip() or '1'
+        choice = input('chose a number: ').strip() or '3'
 
         savepoint = choice == '1'
         conflict = choice == '2'
         limit = input('how many commits need to show? [default: 5]: ') or 5
 
-        status(savepoint, conflict, limit=limit)
+        packages = status(savepoint, conflict, limit=limit)
+        latest = True
+        for package in packages:
+            print('--------------------------------')
+            print('commit time:', package['created_at'])
+            print('hash:', package['hash'])
+            print('package size:', package['content_length'])
+            if package['savepoint']:
+                print('*savepoint')
+            if package['conflict']:
+                print('*conflict')
+            if latest:
+                print('*latest')
+            latest = False
 
     elif choice == '3':
 
-        hash = input('hash of commit to pulled [default: the last commit]: ')
-        target = input('pull to path [default: the project name]: ')
+        hash = input('hash of commit to pulled [default: last commit]: ')
+        target = input('pull to path [default: current project]: ')
         pull(hash, target)
 
     elif choice == '4':
@@ -218,41 +236,62 @@ def dome_command():
         savepoint = savepoint == 'yes' or savepoint == 'y'
         push(savepoint)
 
+    elif choice == '5':
+        print('bye!')
+        return False
+
     else:
-        print('please enter a number of 1,2,3,4')
+        print('please enter a number of 1,2,3,4,5')
+
+    return True
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+conf = get_config()
+HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
+NAME = conf.get('name') or input('Project Name: ')
+PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
+
+
+print('============== dome v1 ===============')
+print('HOST:', HOST)
+print('NAME:', NAME)
+print('BASE_DIR:', BASE_DIR)
+print('PACKAGE_DIR:', PACKAGE_DIR)
+print('======================================')
+
+conf['host'] = HOST
+conf['name'] = NAME
+set_config(conf)
 
 
 try:
+    requests.get(HOST)
+except Exception as e:
+    print(e)
+    print('the host is unavailable!')
+    sys.exit(0)
 
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    conf = get_config()
-    HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
-    NAME = conf.get('name') or input('Project Name: ')
-    PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
 
-
-    print('============== dome v1 ===============')
-    print('HOST:', HOST)
-    print('NAME:', NAME)
-    print('BASE_DIR:', BASE_DIR)
-    print('PACKAGE_DIR:', PACKAGE_DIR)
-    print('======================================')
-
-    conf['host'] = HOST
-    conf['name'] = NAME
-    set_config(conf)
-
+try:
     if not os.path.exists(PACKAGE_DIR):
         os.mkdir(PACKAGE_DIR)
         print('init pull')
         pull()
         print('======================================')
+except Exception as e:
+    print(e)
+    print('the init failed!')
+    sys.exit(0)
 
+
+try:
     if conf.get('manual', False):
         print('------ Manual Mode ------')
         while True:
             try:
-                dome_command()
+                if not dome_command():
+                    break
             except:
                 traceback.print_exc()
 

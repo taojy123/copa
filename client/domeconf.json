@@ -1,6 +1,5 @@
 {
-  "HOST": "",
-  "NAME": "",
-  "host": "http://127.0.0.1:8000",
-  "name": "t1"
+  "name": "t1",
+  "manual": 1,
+  "host": "http://dome.k8s.tslow.cn"
 }

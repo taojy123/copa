@@ -250,43 +250,51 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 conf = get_config()
 HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
 NAME = conf.get('name') or input('Project Name: ')
+INTERVAL = conf.get('interval') or 5
+MANUAL = conf.get('manual', 0)
 PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
 
 
 print('============== dome v1 ===============')
 print('HOST:', HOST)
 print('NAME:', NAME)
+print('INTERVAL:', INTERVAL)
+print('MANUAL:', MANUAL)
 print('BASE_DIR:', BASE_DIR)
 print('PACKAGE_DIR:', PACKAGE_DIR)
 print('======================================')
 
+
 conf['host'] = HOST
 conf['name'] = NAME
+conf['interval'] = INTERVAL
+conf['manual'] = MANUAL
 set_config(conf)
 
 
 try:
     requests.get(HOST)
 except Exception as e:
-    print(e)
     print('the host is unavailable!')
+    print(e)
     sys.exit(0)
 
 
 try:
+    INTERVAL = int(INTERVAL)
     if not os.path.exists(PACKAGE_DIR):
         os.mkdir(PACKAGE_DIR)
         print('init pull')
         pull()
         print('======================================')
 except Exception as e:
-    print(e)
     print('the init failed!')
+    print(e)
     sys.exit(0)
 
 
 try:
-    if conf.get('manual', False):
+    if MANUAL:
         print('------ Manual Mode ------')
         while True:
             try:
@@ -299,7 +307,7 @@ try:
         print('------ Auto Run Mode ------')
         while True:
 
-            time.sleep(5)
+            time.sleep(INTERVAL)
 
             lasthash = get_last_hash()
             currhash = package_hash()

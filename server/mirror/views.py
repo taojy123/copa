@@ -15,13 +15,16 @@ def status(request):
     savepoint = request.POST.get('savepoint') or request.GET.get('savepoint')
     conflict = request.POST.get('conflict') or request.GET.get('conflict')
     latest = request.POST.get('latest') or request.GET.get('latest')
+    limit = int(request.POST.get('limit') or request.GET.get('limit') or 0)
     packages = Package.objects.filter(name=name).order_by('-id')
     if savepoint:
         packages = packages.filter(savepoint=True)
     if conflict:
         packages = packages.filter(conflict=True)
     if latest:
-        packages = packages[:1]
+        limit = 1
+    if limit:
+        packages = packages[:limit]
     rs = []
     for package in packages:
         r = {

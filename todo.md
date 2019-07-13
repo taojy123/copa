@@ -1,10 +1,13 @@
 # todo
 
-- server dockerfile
-- server 部署说明
-- client 打包
+- server dockerfile ok
+- client 打包 ok
 - client manual 模式
-- client 使用说明
+
+
+- Readme 客户端使用指南
+- Readme 部署说明
+
 
 - 加密传输模式
 

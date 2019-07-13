@@ -17,11 +17,17 @@ import re
 
 from django.conf import settings
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include, re_path
 from django.views.static import serve
 
 
+def index(request):
+    return HttpResponse('dome server')
+
+
 urlpatterns = [
+    path('', index),
     path('admin/', admin.site.urls),
     path('mirror/', include('mirror.urls', 'mirror')),
 ]

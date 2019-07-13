@@ -63,13 +63,14 @@ def set_last_hash(hash=''):
     return hash
 
 
-def status(savepoint=False, conflict=False, latest=False):
+def status(savepoint=False, conflict=False, latest=False, limit=5):
     url = HOST + '/mirror/status/'
     data = {
         'name': NAME,
         'savepoint': savepoint or '',
         'conflict': conflict or '',
         'latest': latest or '',
+        'limit': limit,
     }
     r = requests.post(url, data)
     # print(r.text)
@@ -168,14 +169,57 @@ def set_config(conf):
     open('domeconf.json', 'w').write(conf)
 
 
-def entry_project_name():
-    while True:
-        name = input('Project Name: ')
-        if '/' in name or '\\' in name:
-            continue
-        if not name:
-            continue
-        return name
+def show(content):
+    if content == 'config':
+        conf = get_config()
+        print(json.dumps(conf, ensure_ascii=False, indent=2))
+    elif content == 'hash':
+        get_last_hash()
+
+
+def dome_command():
+    print('\n------------------------------------------')
+    print('1. show info [default]')
+    print('2. show remote commits')
+    print('3. pull remote commit to local')
+    print('4. push local to remote commit')
+
+    choice = input('chose a number: ').strip() or '1'
+
+    if choice == '1':
+        print('HOST:', HOST)
+        print('NAME:', NAME)
+        print('BASE_DIR:', BASE_DIR)
+        print('PACKAGE_DIR:', PACKAGE_DIR)
+        get_last_hash()
+
+    elif choice == '2':
+        print('1. only savepoint commits')
+        print('2. only conflict commits')
+        print('3. all kind of commits [default]')
+
+        choice = input('chose a number: ').strip() or '1'
+
+        savepoint = choice == '1'
+        conflict = choice == '2'
+        limit = input('how many commits need to show? [default: 5]: ') or 5
+
+        status(savepoint, conflict, limit=limit)
+
+    elif choice == '3':
+
+        hash = input('hash of commit to pulled [default: the last commit]: ')
+        target = input('pull to path [default: the project name]: ')
+        pull(hash, target)
+
+    elif choice == '4':
+
+        savepoint = input('as a savepoint? (yes / no[default]): ').strip()
+        savepoint = savepoint == 'yes' or savepoint == 'y'
+        push(savepoint)
+
+    else:
+        print('please enter a number of 1,2,3,4')
 
 
 try:
@@ -204,16 +248,16 @@ try:
         pull()
         print('======================================')
 
-
-
     if conf.get('manual', False):
-        print('Manual Mode')
-        status()
-        # pull('2adb233171254de1d624065c43c212ac', 'ttt2')
-        pass
+        print('------ Manual Mode ------')
+        while True:
+            try:
+                dome_command()
+            except:
+                traceback.print_exc()
 
     else:
-        print('Auto Run Mode')
+        print('------ Auto Run Mode ------')
         while True:
 
             time.sleep(5)
@@ -238,7 +282,7 @@ try:
 except:
     print('================== error ==================')
     traceback.print_exc()
-    input()
+    input('Press enter to exit')
 
 
 

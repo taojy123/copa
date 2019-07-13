@@ -182,7 +182,7 @@ try:
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     conf = get_config()
-    HOST = conf.get('host') or 'http://127.0.0.1:8000'
+    HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
     NAME = conf.get('name') or input('Project Name: ')
     PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
 
@@ -197,7 +197,6 @@ try:
     conf['host'] = HOST
     conf['name'] = NAME
     set_config(conf)
-
 
     if not os.path.exists(PACKAGE_DIR):
         os.mkdir(PACKAGE_DIR)

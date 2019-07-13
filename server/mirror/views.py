@@ -78,7 +78,7 @@ def pull(request):
     if not package:
         return HttpResponseNotFound('package not found')
     content = BytesIO(package.content)
-    return StreamingHttpResponse(content)
+    return StreamingHttpResponse(content, content_type='application/zip')
 
 
 def clear(request):

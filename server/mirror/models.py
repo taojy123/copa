@@ -14,6 +14,10 @@ class Package(models.Model):
     def content_length(self):
         return len(self.content)
 
+    @property
+    def download(self):
+        return f'/mirror/pull/?name={self.name}&hash={self.hash}'
+
 
 class Clipboard(models.Model):
     name = models.CharField(max_length=100, db_index=True)

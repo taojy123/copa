@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.html import format_html
 
 
 class Package(models.Model):
@@ -16,7 +17,8 @@ class Package(models.Model):
 
     @property
     def download(self):
-        return f'/mirror/pull/?name={self.name}&hash={self.hash}'
+        download_url = f'/mirror/pull/?name={self.name}&hash={self.hash}'
+        return format_html(f'<a href="{download_url}" target="_blank">download</a>')
 
 
 class Clipboard(models.Model):

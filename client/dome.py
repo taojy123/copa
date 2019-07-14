@@ -286,6 +286,7 @@ try:
     set_language(LANGUAGE)
     if not os.path.exists(PACKAGE_DIR):
         os.mkdir(PACKAGE_DIR)
+        open(os.path.join(PACKAGE_DIR, 'init.txt'), 'w').write('this just a test file')
         print(_('init pull'))
         pull()
         print('======================================')

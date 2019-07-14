@@ -3,6 +3,7 @@ from io import BytesIO
 
 from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound, StreamingHttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 
 from mirror.models import Package
 
@@ -34,7 +35,7 @@ def status(request):
             'hash': package.hash,
             'savepoint': package.savepoint,
             'conflict': package.conflict,
-            'created_at': package.created_at,
+            'created_at': timezone.localtime(package.created_at),
         }
         rs.append(r)
     return JsonResponse({'packages': rs})

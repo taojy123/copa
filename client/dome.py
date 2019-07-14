@@ -10,6 +10,8 @@ import zipfile
 
 import requests
 
+from trans import set_language, translate as _
+
 
 def package_files(target=''):
     target = target or PACKAGE_DIR
@@ -134,7 +136,7 @@ def pull(hash='', target=''):
 
     if target:
         if os.path.exists(target):
-            print('Can not pull to a exists dir!')
+            print(_('Can not pull to a exists dir!'))
             return
     else:
         target = PACKAGE_DIR
@@ -173,129 +175,129 @@ def set_config(conf):
     open('domeconf.json', 'w').write(conf)
 
 
-def show(content):
-    if content == 'config':
-        conf = get_config()
-        print(json.dumps(conf, ensure_ascii=False, indent=2))
-    elif content == 'hash':
-        get_last_hash()
+def show_info():
+    print('-------------- project info --------------')
+    print('HOST:', HOST)
+    print('NAME:', NAME)
+    print('INTERVAL:', INTERVAL)
+    print('LANGUAGE:', LANGUAGE)
+    print('MANUAL:', MANUAL)
+    print('BASE_DIR:', BASE_DIR)
+    print('PACKAGE_DIR:', PACKAGE_DIR)
+    get_last_hash()
+    print('------------------------------------------')
 
 
 def dome_command():
     print('\n------------------------------------------')
-    print('1. show info [default]')
-    print('2. show remote commits')
-    print('3. pull remote commit to local')
-    print('4. push local to remote commit')
-    print('5. quit')
+    print(_('1. show project info [default]'))
+    print(_('2. show remote commits'))
+    print(_('3. pull remote commit to local'))
+    print(_('4. push local to remote commit'))
+    print(_('5. quit'))
 
-    choice = input('chose a number: ').strip() or '1'
+    choice = input(_('chose a number:')).strip() or '1'
 
     if choice == '1':
-        print('HOST:', HOST)
-        print('NAME:', NAME)
-        print('BASE_DIR:', BASE_DIR)
-        print('PACKAGE_DIR:', PACKAGE_DIR)
-        get_last_hash()
+        show_info()
 
     elif choice == '2':
-        print('1. only savepoint commits')
-        print('2. only conflict commits')
-        print('3. all kind of commits [default]')
+        print(_('1. only savepoint commits'))
+        print(_('2. only conflict commits'))
+        print(_('3. all kind of commits [default]'))
 
-        choice = input('chose a number: ').strip() or '3'
+        choice = input(_('chose a number:')).strip() or '3'
 
         savepoint = choice == '1'
         conflict = choice == '2'
-        limit = input('how many commits need to show? [default: 5]: ') or 5
+        limit = input(_('how many commits need to show? [default: 5]:')) or 5
 
         packages = status(savepoint, conflict, limit=limit)
         latest = True
         for package in packages:
             print('--------------------------------')
-            print('commit time:', package['created_at'])
-            print('hash:', package['hash'])
-            print('package size:', package['content_length'])
+            print(_('commit time:'), package['created_at'])
+            print(_('hash:'), package['hash'])
+            print(_('package size:'), package['content_length'])
             if package['savepoint']:
-                print('*savepoint')
+                print(_('*savepoint'))
             if package['conflict']:
-                print('*conflict')
+                print(_('*conflict'))
             if latest:
-                print('*latest')
+                print(_('*latest'))
             latest = False
 
     elif choice == '3':
 
-        hash = input('hash of commit to pulled [default: last commit]: ')
-        target = input('pull to path [default: current project]: ')
+        hash = input(_('hash of commit to pulled [default: last commit]:'))
+        target = input(_('pull to path [default: current project]:'))
         pull(hash, target)
 
     elif choice == '4':
 
-        savepoint = input('as a savepoint? (yes / no[default]): ').strip()
+        savepoint = input(_('as a savepoint? yes / no[default]:')).strip()
         savepoint = savepoint == 'yes' or savepoint == 'y'
         push(savepoint)
 
     elif choice == '5':
-        print('bye!')
+        print(_('bye!'))
         return False
 
     else:
-        print('please enter a number of 1,2,3,4,5')
+        print(_('please enter a number of 1,2,3,4,5'))
 
     return True
 
 
+print('============== dome v1 ===============')
+
+print('NOTICE:', _('To avoid data loss, do not set an existing directory to the project name for the first time!'))
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 conf = get_config()
 HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
-NAME = conf.get('name') or input('Project Name: ')
+NAME = conf.get('name') or input(_('Project Name:'))
 INTERVAL = conf.get('interval') or 5
+LANGUAGE = conf.get('language') or 'en'
 MANUAL = conf.get('manual', 0)
 PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
-
-
-print('============== dome v1 ===============')
-print('HOST:', HOST)
-print('NAME:', NAME)
-print('INTERVAL:', INTERVAL)
-print('MANUAL:', MANUAL)
-print('BASE_DIR:', BASE_DIR)
-print('PACKAGE_DIR:', PACKAGE_DIR)
-print('======================================')
-
 
 conf['host'] = HOST
 conf['name'] = NAME
 conf['interval'] = INTERVAL
+conf['language'] = LANGUAGE
 conf['manual'] = MANUAL
 set_config(conf)
+
+
+show_info()
 
 
 try:
     requests.get(HOST)
 except Exception as e:
-    print('the host is unavailable!')
+    print(_('the host is unavailable, please set the correct host in domeconf.json'))
     print(e)
     sys.exit(0)
 
 
 try:
     INTERVAL = int(INTERVAL)
+    set_language(LANGUAGE)
     if not os.path.exists(PACKAGE_DIR):
         os.mkdir(PACKAGE_DIR)
-        print('init pull')
+        print(_('init pull'))
         pull()
         print('======================================')
 except Exception as e:
-    print('the init failed!')
+    print(_('the init failed!'))
     print(e)
     sys.exit(0)
 
 
 try:
     if MANUAL:
-        print('------ Manual Mode ------')
+        print(_('------ Manual Mode ------'))
         while True:
             try:
                 if not dome_command():
@@ -304,7 +306,7 @@ try:
                 traceback.print_exc()
 
     else:
-        print('------ Auto Run Mode ------')
+        print(_('------ Auto Run Mode ------'))
         while True:
 
             time.sleep(INTERVAL)
@@ -322,14 +324,14 @@ try:
             if remote_lasthash != lasthash:
                 lasthash = pull()
                 if remote_lasthash != lasthash:
-                    print('WARNING: pulling hash not matched:', lasthash)
+                    print('WARNING:', 'pulling hash not matched:', lasthash)
 
             print('======================================')
 
 except:
     print('================== error ==================')
     traceback.print_exc()
-    input('Press enter to exit')
+    input(_('Press enter to exit'))
 
 
 

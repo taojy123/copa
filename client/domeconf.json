@@ -1,5 +1,7 @@
 {
   "name": "t1",
   "manual": 1,
-  "host": "http://dome.k8s.tslow.cn"
+  "host": "http://dome.k8s.tslow.cn",
+  "interval": 5,
+  "language": "zh"
 }

@@ -2,7 +2,8 @@
 
 - server dockerfile ok
 - client 打包 ok
-- client manual 模式
+- client manual 模式 ok
+- 中文翻译 ok
 
 
 - Readme 客户端使用指南

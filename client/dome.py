@@ -253,7 +253,7 @@ print('============== dome v1 ===============')
 
 print('NOTICE:', _('To avoid data loss, do not set an existing directory to the project name for the first time!'))
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.getcwd()  # os.path.dirname(os.path.abspath(__file__))
 conf = get_config()
 HOST = conf.get('host') or 'http://dome.k8s.tslow.cn'
 NAME = conf.get('name') or input(_('Project Name:'))
@@ -273,12 +273,19 @@ set_config(conf)
 show_info()
 
 
+unavailable_list = ['.', '/', ' ', '\\']
+for item in unavailable_list:
+    if item in NAME:
+        print('ERROR:', _('project name is invalid, please change it in domeconf.json'))
+        sys.exit(1)
+
+
 try:
     requests.get(HOST)
 except Exception as e:
     print(_('the host is unavailable, please set the correct host in domeconf.json'))
     print(e)
-    sys.exit(0)
+    sys.exit(1)
 
 
 try:
@@ -293,7 +300,7 @@ try:
 except Exception as e:
     print(_('the init failed!'))
     print(e)
-    sys.exit(0)
+    sys.exit(1)
 
 
 try:

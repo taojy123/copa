@@ -58,7 +58,7 @@ TRANSLATE_MAP['zh'] = {
     'as a savepoint? yes / no[default]:': '是否作为 “保存点” 推送? 请输入 yes 或 no [默认为 no]:',
     'bye!': '再见!',
     'please enter a number of 1,2,3,4,5': '请选择 1,2,3,4,5 中的一个数字',
-    'To avoid data loss, do not set an existing directory to the project name for the first time!': '为避免数据丢失，首次使用时，请不要将一个已存在的目录设置为项目目录!',
+    'to avoid data loss, do not set an existing directory to the project name for the first time!': '为避免数据丢失，首次使用时，请不要将一个已存在的目录设置为项目目录!',
     'Project Name:': '项目目录名:',
     'the host is unavailable, please set the correct host in domeconf.json': '云端服务器不可用，请在 domeconf.json 中设置正确的 host',
     'init pull': '项目初始化，拉取云端数据',
@@ -66,6 +66,7 @@ TRANSLATE_MAP['zh'] = {
     '------ Manual Mode ------': '------ 手动模式 ------',
     '------ Auto Run Mode ------': '------ 自动模式 ------',
     'Press enter to exit': '按下回车键退出',
+    'project name is invalid, please change it in domeconf.json': '项目名称不合法，请在 domeconf.json 更改设置',
 }
 
 

@@ -31,11 +31,11 @@ def status(request):
         r = {
             'id': package.id,
             'name': package.name,
-            'content_length': package.content_length,
             'hash': package.hash,
             'savepoint': package.savepoint,
             'conflict': package.conflict,
             'created_at': timezone.localtime(package.created_at),
+            'content_length': '-',  # todo: deprecated to remove
         }
         rs.append(r)
     return JsonResponse({'packages': rs})

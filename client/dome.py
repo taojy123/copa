@@ -218,7 +218,6 @@ def dome_command():
             print('--------------------------------')
             print(_('commit time:'), package['created_at'])
             print(_('hash:'), package['hash'])
-            print(_('package size:'), package['content_length'])
             if package['savepoint']:
                 print(_('*savepoint'))
             if package['conflict']:

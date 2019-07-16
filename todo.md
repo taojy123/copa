@@ -5,10 +5,10 @@
 - client manual 模式 ok
 - 中文翻译 ok
 - v1.0.0 发布 ok
-- proxy 功能
-- 剪贴板同步
+- proxy 功能 ok
+- 剪贴板同步 ok
+- v1.1.0 发布 ok
 - 文件传七牛
-- v1.1.0 发布
 
 
 

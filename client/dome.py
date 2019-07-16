@@ -366,8 +366,8 @@ try:
                     'content': currclip,
                 }
                 if api_request('post', uri, data):
-                    print(r['status'])
                     lastclip = currclip
+                    print('set clipboard to remote')
 
             uri = '/mirror/get_clip/'
             data = {
@@ -377,7 +377,7 @@ try:
             if r and r['content'] != lastclip:
                 lastclip = r['content']
                 pyperclip.copy(lastclip)
-                print('copy newest clipboard success')
+                print('get newest clipboard from remote')
 
             print('======================================')
 

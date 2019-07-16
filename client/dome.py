@@ -2,13 +2,14 @@ import hashlib
 import json
 import os
 import io
-import shutil
 import sys
 import time
 import traceback
 import zipfile
 
 import requests
+import pyperclip
+
 
 from trans import set_language, translate as _
 
@@ -336,6 +337,7 @@ try:
 
     else:
         print(_('------ Auto Run Mode ------'))
+        lastclip = pyperclip.paste()
         while True:
 
             time.sleep(INTERVAL)
@@ -354,6 +356,12 @@ try:
                 lasthash = pull()
                 if remote_lasthash != lasthash:
                     print('WARNING:', 'pulling hash not matched:', lasthash)
+
+            currclip = pyperclip.paste().strip()
+            if currclip and currclip != lasthash:
+                uri = '/mirror/'
+                api_request('post', uri, data)
+                lasthash = currclip
 
             print('======================================')
 

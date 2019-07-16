@@ -11,5 +11,7 @@ urlpatterns = [
     path('status/', views.status),
     path('push/', views.push),
     path('pull/', views.pull),
+    path('set_clip/', views.set_clip),
+    path('get_clip/', views.get_clip),
     path('clear/', views.clear),
 ]

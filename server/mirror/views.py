@@ -5,10 +5,10 @@ from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse, Http
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from mirror.models import Package
-
+from mirror.models import Package, Clipboard
 
 PACKAGE_LIMIT_MB = 100
+CLIPBOARD_LIMIT_MB = 5
 
 
 def status(request):
@@ -83,6 +83,36 @@ def pull(request):
         return HttpResponseNotFound('package not found')
     content = BytesIO(package.content)
     return StreamingHttpResponse(content, content_type='application/zip')
+
+
+def set_clip(request):
+    name = request.POST.get('name') or request.GET.get('name')
+    content = request.POST.get('content') or request.GET.get('content')
+
+    if not name or not content:
+        return HttpResponseBadRequest('miss name or content')
+
+    if len(content) > 1024 * 1024 * CLIPBOARD_LIMIT_MB:
+        return HttpResponseBadRequest(f'the package size must less than {CLIPBOARD_LIMIT_MB}MB')
+
+    clip, created = Clipboard.objects.get_or_create(name=name)
+    clip.content = content
+    clip.save()
+
+    return JsonResponse({'status': 'set success'})
+
+
+def get_clip(request):
+    name = request.POST.get('name') or request.GET.get('name')
+
+    if not name:
+        return HttpResponseBadRequest('miss name')
+
+    clip = Clipboard.objects.filter(name=name).first()
+    if not clip:
+        return HttpResponseBadRequest('clip not found')
+
+    return JsonResponse({'content': clip.content})
 
 
 def clear(request):

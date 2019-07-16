@@ -11,6 +11,6 @@ class PackageAdmin(admin.ModelAdmin):
 
 @admin.register(Clipboard)
 class ClipboardAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'content', 'created_at']
-    list_filter = ['name', 'created_at']
+    list_display = ['id', 'name', 'content', 'created_at', 'updated_at']
+    list_filter = ['name', 'created_at', 'updated_at']
 

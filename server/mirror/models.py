@@ -23,7 +23,8 @@ class Package(models.Model):
 
 
 class Clipboard(models.Model):
-    name = models.CharField(max_length=100, db_index=True)
+    name = models.CharField(max_length=100, unique=True)
     content = models.TextField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 

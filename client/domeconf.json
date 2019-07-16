@@ -3,5 +3,7 @@
   "manual": 1,
   "host": "http://dome.k8s.tslow.cn",
   "interval": 5,
-  "language": "zh"
+  "language": "zh",
+  "http_proxy": "tslow.cn:30888",
+  "https_proxy": "tslow.cn:30888"
 }

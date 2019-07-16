@@ -13,6 +13,23 @@ import requests
 from trans import set_language, translate as _
 
 
+def api_request(method, uri, data=None, files=None):
+    if HTTP_PROXY:
+        proxies = {'http': HTTP_PROXY, 'https': HTTPS_PROXY or HTTP_PROXY}
+    else:
+        proxies = None
+    url = HOST + uri
+    r = requests.request(method, url, data=data, files=files, proxies=proxies, verify=False)
+    if r.status_code is not 200:
+        print('ERROR:', r.text)
+        return
+    try:
+        r = r.json()
+    except:
+        return r.content
+    return r
+
+
 def package_files(target=''):
     target = target or PACKAGE_DIR
 
@@ -67,7 +84,7 @@ def set_last_hash(hash=''):
 
 
 def status(savepoint=False, conflict=False, latest=False, limit=5):
-    url = HOST + '/mirror/status/'
+    uri = '/mirror/status/'
     data = {
         'name': NAME,
         'savepoint': savepoint or '',
@@ -75,9 +92,9 @@ def status(savepoint=False, conflict=False, latest=False, limit=5):
         'latest': latest or '',
         'limit': limit,
     }
-    r = requests.post(url, data)
-    # print(r.text)
-    r = r.json()
+    r = api_request('post', uri, data)
+    if not r:
+        return
     packages = r['packages']
     # print(json.dumps(packages, indent=2, ensure_ascii=False))
     if latest:
@@ -103,36 +120,31 @@ def push(savepoint=False):
 
     print('push current hash:', hash)
 
-    url = HOST + '/mirror/push/'
+    uri = '/mirror/push/'
     data = {
         'name': NAME,
         'hash': hash,
         'savepoint': savepoint or '',
     }
     files = {'package': package}
-    r = requests.post(url, data, files=files)
-    if r.status_code is not 200:
-        print('ERROR:', r.text)
-        return
-
-    print('push success')
+    if api_request('post', uri, data, files):
+        print('push success')
     return set_last_hash(hash)
 
 
 def pull(hash='', target=''):
     print('=== PULL ===')
 
-    url = HOST + '/mirror/pull/'
+    uri = '/mirror/pull/'
     data = {
         'name': NAME,
         'hash': hash
     }
-    r = requests.post(url, data)
-    if r.status_code is not 200:
-        print('ERROR:', r.text)
+    content = api_request('post', uri, data)
+    if not content:
         return
 
-    package = io.BytesIO(r.content)
+    package = io.BytesIO(content)
 
     if target:
         if os.path.exists(target):
@@ -176,16 +188,19 @@ def set_config(conf):
 
 
 def show_info():
-    print('-------------- project info --------------')
+    print('===================== project info =====================')
     print('HOST:', HOST)
     print('NAME:', NAME)
     print('INTERVAL:', INTERVAL)
     print('LANGUAGE:', LANGUAGE)
     print('MANUAL:', MANUAL)
+    print('HTTP_PROXY:', HTTP_PROXY)
+    print('HTTPS_PROXY:', HTTPS_PROXY)
+    print('-------------')
     print('BASE_DIR:', BASE_DIR)
     print('PACKAGE_DIR:', PACKAGE_DIR)
     get_last_hash()
-    print('------------------------------------------')
+    print('=========================================================')
 
 
 def dome_command():
@@ -259,6 +274,8 @@ NAME = conf.get('name') or input(_('Project Name:'))
 INTERVAL = conf.get('interval') or 5
 LANGUAGE = conf.get('language') or 'en'
 MANUAL = conf.get('manual', 0)
+HTTP_PROXY = conf.get('http_proxy', '')
+HTTPS_PROXY = conf.get('https_proxy', '')
 PACKAGE_DIR = os.path.join(BASE_DIR, NAME)
 
 conf['host'] = HOST
@@ -266,6 +283,8 @@ conf['name'] = NAME
 conf['interval'] = INTERVAL
 conf['language'] = LANGUAGE
 conf['manual'] = MANUAL
+conf['http_proxy'] = HTTP_PROXY
+conf['https_proxy'] = HTTPS_PROXY
 set_config(conf)
 
 
@@ -276,14 +295,16 @@ unavailable_list = ['.', '/', ' ', '\\']
 for item in unavailable_list:
     if item in NAME:
         print('ERROR:', _('project name is invalid, please change it in domeconf.json'))
+        input()
         sys.exit(1)
 
 
 try:
-    requests.get(HOST)
+    api_request('get', '/')
 except Exception as e:
-    print(_('the host is unavailable, please set the correct host in domeconf.json'))
+    print('ERROR:', _('the host is unavailable, please set the correct host in domeconf.json'))
     print(e)
+    input()
     sys.exit(1)
 
 
@@ -297,8 +318,9 @@ try:
         pull()
         print('======================================')
 except Exception as e:
-    print(_('the init failed!'))
+    print('ERROR:', _('the init failed!'))
     print(e)
+    input()
     sys.exit(1)
 
 

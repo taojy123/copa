@@ -62,14 +62,14 @@ def push(request):
     p = Package.objects.filter(name=name).order_by('-id').first()
 
     if p and p.hash == hash and not savepoint:
-        return HttpResponse('package exists')
+        return JsonResponse({'status': 'exists'})
 
     # if hashlib.md5(content).hexdigest() != hash:
     #     return HttpResponseBadRequest('hash not match')
 
     Package.objects.create(name=name, hash=hash, content=content, savepoint=savepoint)
 
-    return HttpResponse('package saved')
+    return JsonResponse({'status': 'saved'})
 
 
 def pull(request):
@@ -91,7 +91,7 @@ def clear(request):
         latest = Package.objects.filter(name=name).latest('id')
         latest_id = latest.id if latest else 0
         Package.objects.filter(name=name).exclude(id=latest_id).exclude(savepoint=True).exclude(conflict=True).delete()
-    return HttpResponse('clear finished')
+    return HttpResponse({'status': 'cleaned'})
 
 
 

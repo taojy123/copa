@@ -377,6 +377,7 @@ try:
             if r and r['content'] != lastclip:
                 lastclip = r['content']
                 pyperclip.copy(lastclip)
+                print('copy newest clipboard success')
 
             print('======================================')
 

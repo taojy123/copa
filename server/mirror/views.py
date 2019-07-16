@@ -99,7 +99,7 @@ def set_clip(request):
     clip.content = content
     clip.save()
 
-    return JsonResponse({'status': 'set success'})
+    return JsonResponse({'status': 'set clip success'})
 
 
 def get_clip(request):

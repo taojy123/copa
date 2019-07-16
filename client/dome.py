@@ -357,11 +357,26 @@ try:
                 if remote_lasthash != lasthash:
                     print('WARNING:', 'pulling hash not matched:', lasthash)
 
-            currclip = pyperclip.paste().strip()
-            if currclip and currclip != lasthash:
-                uri = '/mirror/'
-                api_request('post', uri, data)
-                lasthash = currclip
+            # ======= clipboard =======
+            currclip = pyperclip.paste()
+            if currclip and currclip != lastclip:
+                uri = '/mirror/set_clip/'
+                data = {
+                    'name': NAME,
+                    'content': currclip,
+                }
+                if api_request('post', uri, data):
+                    print(r['status'])
+                    lastclip = currclip
+
+            uri = '/mirror/get_clip/'
+            data = {
+                'name': NAME,
+            }
+            r = api_request('post', uri, data)
+            if r and r['content'] != lastclip:
+                lastclip = r['content']
+                pyperclip.copy(lastclip)
 
             print('======================================')
 

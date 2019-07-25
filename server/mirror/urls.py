@@ -9,4 +9,5 @@ app_name = 'mirror'
 
 urlpatterns = [
     path('clipboards/<token>/', views.clipboard),
+    path('clear', views.clear),
 ]

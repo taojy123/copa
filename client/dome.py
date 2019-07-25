@@ -85,28 +85,25 @@ except Exception as e:
 while True:
 
     try:
+
         time.sleep(conf['interval'])
+        uri = f'/mirror/clipboards/{conf["token"]}/'
 
         currclip = pyperclip.paste()
         if currclip and currclip != lastclip:
-            uri = '/mirror/set_clip/'
             data = {
-                'token': conf['token'],
                 'content': currclip,
             }
-            if api_request(conf, 'post', uri, data):
+            res = api_request(conf, 'post', uri, data)
+            if res:
+                print(_('set clipboard successful'))
                 lastclip = currclip
-                print('set clipboard to remote')
 
-        uri = '/mirror/get_clip/'
-        data = {
-            'token': conf['token'],
-        }
-        r = api_request(conf, 'post', uri, data)
-        if r and r['content'] != lastclip:
-            lastclip = r['content']
+        content = api_request(conf, 'get', uri)
+        if content and content != lastclip:
+            lastclip = content
             pyperclip.copy(lastclip)
-            print('get newest clipboard from remote')
+            print(_('get newest clipboard from remote'))
 
         print('======================================')
 

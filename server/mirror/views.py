@@ -27,3 +27,7 @@ def clipboard(request, token):
     else:
         return HttpResponseBadRequest('method not allow')
 
+
+def clear(request):
+    res = Clipboard.objects.filter(content='').delete()
+    return HttpResponse(res)

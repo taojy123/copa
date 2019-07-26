@@ -31,7 +31,7 @@ You can change it by text editor
 
 ```
 {
-  "host": "http://copa.k8s.tslow.cn",  // Server address, default is the publish server
+  "host": "http://copa.k8s.tslow.cn",  // Server address, default is the public server
   "token": "test1",    // Clipboard will synchronize in the same token, please set your unique token 
   "interval": 5,       // Synchronization interval
   "language": "zh",    // Currently only support "en" and "zh", default is English
@@ -45,7 +45,7 @@ You can change it by text editor
 
 ### You can contect to copa server in three ways
 
-- Use the publish server **[recommended]**
+- Use the public server **[recommended]**
 
 Just set host `http://copa.k8s.tslow.cn` in `copaconf.json`
 

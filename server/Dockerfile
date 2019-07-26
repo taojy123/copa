@@ -18,7 +18,6 @@ RUN sed -i 's/\r//' /usr/local/bin/entrypoint.sh
 COPY . /workspace
 
 EXPOSE 8000
-VOLUME static
 
 ENTRYPOINT ["entrypoint.sh"]
 

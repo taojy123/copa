@@ -28,7 +28,8 @@ python copa.py
 ### Configuration
 
 `copaconf.json` will auto automatic generated while running
-you can change it by text editor
+
+You can change it by text editor
 
 ```
 {

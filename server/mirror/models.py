@@ -4,6 +4,12 @@ from django.db import models
 from django.utils import timezone
 
 
+def md5(content):
+    if not content:
+        return ''
+    return hashlib.md5(content.encode()).hexdigest()
+
+
 class Clipboard(models.Model):
 
     token = models.CharField(max_length=100, unique=True)
@@ -14,5 +20,5 @@ class Clipboard(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.hash:
-            self.hash = hashlib.md5(self.content.encode()).hexdigest()
+            self.hash = md5(self.content)
         return super().save(*args, **kwargs)

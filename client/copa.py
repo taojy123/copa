@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import sys
@@ -9,6 +10,12 @@ import pyperclip
 
 
 from trans import set_language, translate as _
+
+
+def md5(content):
+    if not content:
+        return ''
+    return hashlib.md5(content.encode()).hexdigest()
 
 
 def api_request(conf, method, uri, data=None):
@@ -29,7 +36,7 @@ def api_request(conf, method, uri, data=None):
 
 def get_config():
     conf = {
-        'host': 'http://dome.k8s.tslow.cn',
+        'host': 'http://copa.k8s.tslow.cn',
         'token': '',
         'interval': 5,
         'language': 'en',
@@ -37,7 +44,7 @@ def get_config():
         'https_proxy': '',
     }
     try:
-        custom_conf = open('domeconf.json').read().lower()
+        custom_conf = open('copaconf.json').read().lower()
         custom_conf = json.loads(custom_conf)
         conf.update(custom_conf)
     except:
@@ -45,20 +52,20 @@ def get_config():
     conf['interval'] = int(conf['interval'])
     if not conf['token']:
         print(_('Please set a token when your first time.'))
-        print(_('If you run dome anywhere else, please set the same token, then clipboards will synchronize.'))
+        print(_('If you run copa anywhere else, please set the same token, then clipboards will synchronize.'))
         conf['token'] = input(_('token:')).lower()
     return conf
 
 
 def set_config(conf):
     conf = json.dumps(conf, ensure_ascii=False, indent=2)
-    open('domeconf.json', 'w').write(conf)
+    open('copaconf.json', 'w').write(conf)
 
 
 # init
 conf = get_config()
 
-print('=================== dome v2 ====================')
+print('=================== copa v2 ====================')
 print('HOST:', conf['host'])
 print('TOKEN:', conf['token'])
 print('INTERVAL:', conf['interval'])
@@ -70,14 +77,13 @@ print('================================================')
 
 set_config(conf)
 set_language(conf['language'])
-lastclip = ''
-
+last_hash = ''
 
 try:
     api_request(conf, 'get', '/')
 except Exception as e:
     print(e)
-    print('ERROR:', _('the host is unavailable, please set the correct host in domeconf.json'))
+    print('ERROR:', _('the host is unavailable, please set the correct host in copaconf.json'))
     input()
     sys.exit(1)
 
@@ -89,20 +95,28 @@ while True:
         time.sleep(conf['interval'])
         uri = f'/mirror/clipboards/{conf["token"]}/'
 
-        currclip = pyperclip.paste()
-        if currclip and currclip != lastclip:
+        curr_clip = pyperclip.paste()
+        curr_hash = md5(curr_clip)
+        print('last hash:', last_hash)
+        print('curr hash:', curr_hash)
+        
+        if curr_hash and curr_hash != last_hash:
             data = {
-                'content': currclip,
+                'content': curr_clip,
+                'hash': curr_hash,
             }
             res = api_request(conf, 'post', uri, data)
             if res:
                 print(_('set clipboard successful'))
-                lastclip = currclip
-
-        content = api_request(conf, 'get', uri)
-        if content and content != lastclip:
-            lastclip = content
-            pyperclip.copy(lastclip)
+                last_hash = curr_hash
+        
+        remote_hash = api_request(conf, 'get', uri + '?target=hash')
+        print('remote hash:', remote_hash)
+        
+        if remote_hash and remote_hash != last_hash:
+            content = api_request(conf, 'get', uri)
+            pyperclip.copy(content)
+            last_hash = remote_hash
             print(_('get newest clipboard from remote'))
 
         print('======================================')

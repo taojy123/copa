@@ -36,8 +36,8 @@ def text_finder(filename, translate_function_name='translate'):
 
 TRANSLATE_MAP['zh'] = {
     'Please set a token when your first time.': '第一次运行时请设置一个属于你的 token',
-    'If you run dome anywhere else, please set the same token, then clipboards will synchronize.': '如果你已经在其他地方运行了 dome，那么请输入与之前相同的 token，这样你的剪切板就可以实时同步啦！',
-    'the host is unavailable, please set the correct host in domeconf.json': '服务器不可用，请检查 domeconf.json 中的 host 配置项',
+    'If you run copa anywhere else, please set the same token, then clipboards will synchronize.': '如果你已经在其他地方运行了 copa，那么请输入与之前相同的 token，这样你的剪切板就可以实时同步啦！',
+    'the host is unavailable, please set the correct host in copaconf.json': '服务器不可用，请检查 copaconf.json 中的 host 配置项',
     'Press enter to exit': '按下回车退出',
     'set clipboard successful': '剪贴板内容以传至云端',
     'get newest clipboard from remote': '从云端获取到最新的剪贴板内容',

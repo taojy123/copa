@@ -1,6 +1,6 @@
 {
-  "host": "http://dome.k8s.tslow.cn",
-  "token": "abb",
+  "host": "http://copa.k8s.tslow.cn",
+  "token": "test1",
   "interval": 5,
   "language": "zh",
   "http_proxy": "tslow.cn:30888",

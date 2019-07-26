@@ -12,7 +12,7 @@ A clipboard Synchronization Tool
 
 - Download the compiled executable client from releases page **[recommended]**
 
-https://github.com/taojy123/copa/releases
+[https://github.com/taojy123/copa/releases](https://github.com/taojy123/copa/releases)
 
 
 - Or, run the source code script

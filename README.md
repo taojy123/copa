@@ -1,7 +1,5 @@
 # copa
 
-A clipboard Synchronization Tool  
-
 **Copy Once, Paste Anywhere**
 
 -----

@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import json
 import os
@@ -49,6 +50,7 @@ def get_config():
         conf.update(custom_conf)
     except:
         pass
+    set_language(conf['language'])
     conf['interval'] = int(conf['interval'])
     if not conf['token']:
         print(_('Please set a token when your first time.'))
@@ -76,7 +78,6 @@ print('CURRENT DIR:', os.getcwd())
 print('================================================')
 
 set_config(conf)
-set_language(conf['language'])
 last_hash = ''
 
 try:
@@ -91,8 +92,8 @@ except Exception as e:
 while True:
 
     try:
-
-        time.sleep(conf['interval'])
+        print('==========', datetime.datetime.now(), '==========')
+        
         uri = f'/mirror/clipboards/{conf["token"]}/'
 
         curr_clip = pyperclip.paste()
@@ -118,13 +119,14 @@ while True:
             pyperclip.copy(content)
             last_hash = remote_hash
             print(_('get newest clipboard from remote'))
-
-        print('======================================')
-
+        
     except:
         print('================== error ==================')
         traceback.print_exc()
         # input(_('Press enter to exit'))
+        
+    finally:
+        time.sleep(conf['interval'])
 
 
 

@@ -12,6 +12,12 @@
 
 [https://github.com/taojy123/copa/releases](https://github.com/taojy123/copa/releases)
 
+In Mac, you should run client in command:
+```
+chmod a+x copa_mac
+./copa_mac
+```
+
 
 - Or, run the source code script
 

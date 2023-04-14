@@ -31,7 +31,7 @@ You can change it by text editor
 
 ```
 {
-  "host": "http://copa.k8s.tslow.cn",  // Server address, default is the public server
+  "host": "http://copa.tslow.cn",  // Server address, default is the public server
   "token": "test1",    // Clipboard will synchronize in the same token, please set your unique token 
   "interval": 5,       // Synchronization interval
   "language": "zh",    // Currently only support "en" and "zh", default is English
@@ -47,7 +47,7 @@ You can change it by text editor
 
 - Use the public server **[recommended]**
 
-Just set host `http://copa.k8s.tslow.cn` in `copaconf.json`
+Just set host `http://copa.tslow.cn` in `copaconf.json`
 
 
 - Or, deploy your own server by docker

@@ -19,8 +19,6 @@ COPY . /workspace
 
 EXPOSE 8000
 
-ENTRYPOINT ["entrypoint.sh"]
-
 
 # settings env:
 #   DEBUG
@@ -30,4 +28,8 @@ ENTRYPOINT ["entrypoint.sh"]
 #   MYSQL_USER
 #   MYSQL_PASSWORD
 #   STATIC_ROOT
+
+
+ENTRYPOINT ["entrypoint.sh"]
+
 

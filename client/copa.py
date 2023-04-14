@@ -37,8 +37,8 @@ def api_request(conf, method, uri, data=None):
 
 def get_config():
     conf = {
-        'host': 'http://copa.k8s.tslow.cn',
-        'token': '',
+        'host': 'http://copa.tslow.cn',
+        'token': 'public_test',
         'interval': 5,
         'language': 'en',
         'http_proxy': '',

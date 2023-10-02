@@ -1,4 +1,0 @@
-#Python3
-django>=2.1,<2.2
-gunicorn==19.9.0
-pymysql==0.9.2

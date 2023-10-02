@@ -1,8 +1,0 @@
-{
-  "host": "http://copa.tslow.cn",
-  "token": "public_test",
-  "interval": 5,
-  "language": "zh",
-  "http_proxy": "",
-  "https_proxy": ""
-}

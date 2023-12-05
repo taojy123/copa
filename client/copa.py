@@ -57,5 +57,9 @@ def get_config():
         conf['token'] = input(_('token:')).lower()
     return conf
 
+def set_config(conf):
+    conf = json.dumps(conf, ensure_ascii=False, indent=2)
+    open('copaconf.json', 'w').write(conf)
+
 
 

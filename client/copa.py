@@ -61,5 +61,29 @@ def set_config(conf):
     conf = json.dumps(conf, ensure_ascii=False, indent=2)
     open('copaconf.json', 'w').write(conf)
 
+# init
+conf = get_config()
+
+print('=================== copa v2 ====================')
+print('HOST:', conf['host'])
+print('TOKEN:', conf['token'])
+print('INTERVAL:', conf['interval'])
+print('LANGUAGE:', conf['language'])
+print('HTTP_PROXY:', conf['http_proxy'])
+print('HTTPS_PROXY:', conf['https_proxy'])
+print('CURRENT DIR:', os.getcwd())
+print('================================================')
+
+set_config(conf)
+last_hash = ''
+
+try:
+    api_request(conf, 'get', '/')
+except Exception as e:
+    print(e)
+    print('ERROR:', _('the host is unavailable, please set the correct host in copaconf.json'))
+    input()
+    sys.exit(1)
+
 
 

@@ -85,5 +85,43 @@ except Exception as e:
     input()
     sys.exit(1)
 
+while True:
+
+    try:
+        print('==========', datetime.datetime.now(), '==========')
+        
+        uri = f'/mirror/clipboards/{conf["token"]}/'
+
+        curr_clip = pyperclip.paste()
+        curr_hash = md5(curr_clip)
+        print('last hash:', last_hash)
+        print('curr hash:', curr_hash)
+        
+        if curr_hash and curr_hash != last_hash:
+            data = {
+                'content': curr_clip,
+                'hash': curr_hash,
+            }
+            res = api_request(conf, 'post', uri, data)
+            if res:
+                print(_('set clipboard successful'))
+                last_hash = curr_hash
+        
+        remote_hash = api_request(conf, 'get', uri + '?target=hash')
+        print('remote hash:', remote_hash)
+        
+        if remote_hash and remote_hash != last_hash:
+            content = api_request(conf, 'get', uri)
+            pyperclip.copy(content)
+            last_hash = remote_hash
+            print(_('get newest clipboard from remote'))
+        
+    except:
+        print('================== error ==================')
+        traceback.print_exc()
+        # input(_('Press enter to exit'))
+        
+    finally:
+        time.sleep(conf['interval'])
 
 

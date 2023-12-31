@@ -34,6 +34,7 @@ def api_request(conf, method, uri, data=None):
         return None
     return r.text
 
+
 def get_config():
     conf = {
         'host': 'http://copa.tslow.cn',
@@ -57,9 +58,11 @@ def get_config():
         conf['token'] = input(_('token:')).lower()
     return conf
 
+
 def set_config(conf):
     conf = json.dumps(conf, ensure_ascii=False, indent=2)
     open('copaconf.json', 'w').write(conf)
+
 
 # init
 conf = get_config()
@@ -84,6 +87,7 @@ except Exception as e:
     print('ERROR:', _('the host is unavailable, please set the correct host in copaconf.json'))
     input()
     sys.exit(1)
+
 
 while True:
 
@@ -123,5 +127,6 @@ while True:
         
     finally:
         time.sleep(conf['interval'])
+
 
 
